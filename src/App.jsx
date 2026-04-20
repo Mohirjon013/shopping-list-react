@@ -5,12 +5,15 @@ import ShoppingAddForm from './components/shopping-add-form'
 import Filter from './components/filter'
 import { Component } from 'react'
 import { arr } from './contstants'
+import SearchPanel from './components/search-panel'
 
 class App extends Component {
   constructor(props){
     super(props)
     this.state = {
-      data: arr
+      data: arr,
+      search:"",
+      filter:"all"
     }
   }
   
@@ -44,22 +47,52 @@ class App extends Component {
     })
   }
 
-  render() {
+  searchData = (arr, term) => {
+    if(term.length === 0){
+      return arr
+    }
 
-    const {data} = this.state
+    return arr.filter(item => item.title.indexOf(term) > -1)
+  }
+
+  onUpdateSearch = (search) => {
+    this.setState({search})
+  }
+
+  filterData = (arr, filter) => {
+    switch(filter) {
+      case "completed":
+        return arr.filter(item => item.active)
+      case "big-size":
+        return arr.filter(item => item.size > 10)
+      default:
+        return arr
+    }
+  }
+
+  onFilterSelect = (filter) => {
+    this.setState({filter})
+  }
+
+
+  render() {
+    const {data, search, filter} = this.state
+
+    const allData = this.filterData(this.searchData(data, search), filter)
+
     return (
       <div className='app'>
         <div className='wrapper'>
           <div className='card'>
             <Information length={data.length}/>
-
+            <SearchPanel onUpdateSearch={this.onUpdateSearch}/>
             <ShoppingAddForm onAdd={this.onAdd}/>
 
-            <ShoppingList data={data} onDelete={this.onDelete} onToggleAc={this.onToggleAc}/>
+            <ShoppingList data={allData} onDelete={this.onDelete} onToggleAc={this.onToggleAc}/>
 
-            <Filter/>
+            <Filter filter={filter} onFilterSelect={this.onFilterSelect}/>
           </div>
-          <img src={earthImg} alt="earth-img"/>
+          <img className='app-img' src={earthImg} alt="earth-img"/>
         </div>
       </div>
     )
